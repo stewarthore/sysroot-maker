@@ -1,0 +1,16 @@
+# Example package list for sysroot-maker
+# One package per line, comments start with #
+
+# Essential utilities
+busybox-static
+klibc-utils
+
+# Cryptography support
+cryptsetup-bin
+
+# LVM support
+lvm2
+
+# Network utilities
+iputils-ping
+iproute2
