@@ -2,10 +2,7 @@
 # Copyright (c) 2026 sysroot-maker contributors
 """Pytest configuration and shared fixtures."""
 
-import os
-import tempfile
 from pathlib import Path
-from typing import Generator
 
 import pytest
 

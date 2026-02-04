@@ -2,8 +2,6 @@
 # Copyright (c) 2026 sysroot-maker contributors
 """Tests for CLI argument parsing."""
 
-import argparse
-import sys
 from unittest.mock import patch
 
 import pytest

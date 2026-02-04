@@ -110,12 +110,10 @@ jobs:
     - name: Run ruff check
       run: |
         uv tool run ruff check .
-      continue-on-error: true
     
     - name: Run ruff format check
       run: |
         uv tool run ruff format --check .
-      continue-on-error: true
 
   all-tests:
     name: All Tests (Combined)

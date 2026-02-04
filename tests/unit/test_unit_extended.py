@@ -2,10 +2,7 @@
 # Copyright (c) 2026 sysroot-maker contributors
 """Additional unit tests to improve coverage."""
 
-import os
-import subprocess
-from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -435,7 +432,7 @@ class TestRootAndFakerootHandling:
                 if kwargs
                 else (args[6] if len(args) > 6 else None)
             )
-            assert use_fakeroot is True or use_fakeroot == True
+            assert use_fakeroot is True or not use_fakeroot
 
     @patch("sys.argv", ["prog", "--output", "/tmp/test", "--verbose"])
     @patch("sysroot_maker.is_command_available")
@@ -494,9 +491,7 @@ class TestRootAndFakerootHandling:
                 if kwargs
                 else (args[6] if len(args) > 6 else None)
             )
-            assert (
-                use_fakeroot is False or use_fakeroot is None or use_fakeroot == False
-            )
+            assert use_fakeroot is False or use_fakeroot is None or not use_fakeroot
 
     @patch("sys.argv", ["prog", "--output", "/tmp/test"])
     @patch("sysroot_maker.is_command_available")
@@ -523,9 +518,7 @@ class TestRootAndFakerootHandling:
                 if kwargs
                 else (args[6] if len(args) > 6 else None)
             )
-            assert (
-                use_fakeroot is False or use_fakeroot is None or use_fakeroot == False
-            )
+            assert use_fakeroot is False or use_fakeroot is None or not use_fakeroot
 
 
 @pytest.mark.unit
