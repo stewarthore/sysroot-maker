@@ -529,7 +529,7 @@ Examples:
     ):
         sys.exit(1)
 
-    print(f"✓ Debootstrap completed successfully")
+    print("✓ Debootstrap completed successfully")
 
     # Handle kernel packages
     progress.set_stage(6, "Processing kernel packages")

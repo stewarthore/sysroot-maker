@@ -2,8 +2,6 @@
 # Copyright (c) 2026 sysroot-maker contributors
 """Integration tests for sysroot_maker (requires real system dependencies)."""
 
-import os
-import subprocess
 from pathlib import Path
 
 import pytest
