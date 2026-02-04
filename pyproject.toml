@@ -5,3 +5,36 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "pytest-xdist>=3.5.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers --cov=. --cov-report=term-missing"
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "unit: Unit tests with mocked dependencies (fast)",
+    "integration: Integration tests with real system calls (slow)",
+    "slow: Slow-running tests",
+    "requires_debootstrap: Tests requiring debootstrap installed",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", ".venv/*", "__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

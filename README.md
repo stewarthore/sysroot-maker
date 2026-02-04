@@ -199,6 +199,55 @@ sudo apt-get install binutils
 - Try providing local .deb files with `--kernel-deb` instead
 - Check mirror availability with `--verbose`
 
+## Development
+
+### Running Tests
+
+The project includes comprehensive unit and integration tests using pytest.
+
+**Install test dependencies:**
+```bash
+uv sync --extra test
+```
+
+**Run unit tests (fast, mocked):**
+```bash
+uv run pytest tests/ -m unit -v
+```
+
+**Run integration tests (requires debootstrap, binutils, fakeroot):**
+```bash
+# Install system dependencies first
+sudo apt-get install debootstrap binutils fakeroot
+
+# Run integration tests
+uv run pytest tests/ -m integration -v
+```
+
+**Run all tests:**
+```bash
+uv run pytest tests/ -v
+```
+
+**Run tests with coverage:**
+```bash
+uv run pytest tests/ --cov=. --cov-report=term-missing
+```
+
+### Test Structure
+
+- `tests/test_unit.py` - Unit tests with mocked dependencies (fast)
+- `tests/test_cli.py` - CLI argument parsing tests
+- `tests/test_integration.py` - Integration tests with real system calls (slow)
+- `tests/conftest.py` - Shared fixtures and test configuration
+
+### Continuous Integration
+
+GitHub Actions CI runs automatically on push/PR:
+- Unit tests (fast feedback)
+- Integration tests (with system dependencies)
+- Linting and format checking
+
 ## License
 
 MIT
