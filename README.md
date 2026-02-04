@@ -261,4 +261,4 @@ GitHub Actions CI runs automatically on push/PR:
 
 ## License
 
-MIT
+GNU GPL v3

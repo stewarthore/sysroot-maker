@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2026 sysroot-maker contributors
 """Additional unit tests to improve coverage."""
 
 import os
