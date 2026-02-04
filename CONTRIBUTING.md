@@ -13,6 +13,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 2. **Install development dependencies:**
    ```bash
    uv sync --extra test
+   uv run pre-commit install
    ```
 
 3. **Install system dependencies (for integration tests):**
