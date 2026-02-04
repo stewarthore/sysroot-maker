@@ -31,7 +31,7 @@ jobs:
     
     - name: Run unit tests
       run: |
-        uv run pytest tests/ -m unit -v --cov=. --cov-report=xml --cov-report=term
+        uv run pytest --cov=. --cov-report=xml --cov-report=term
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
@@ -70,7 +70,7 @@ jobs:
     
     - name: Run integration tests
       run: |
-        uv run pytest tests/ -m integration -v --cov=. --cov-report=xml --cov-report=term
+        uv run pytest tests/integration/ -v --cov=. --cov-report=xml --cov-report=term
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4

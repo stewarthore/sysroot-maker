@@ -210,9 +210,11 @@ The project includes comprehensive unit and integration tests using pytest.
 uv sync --extra test
 ```
 
-**Run unit tests (fast, mocked):**
+**Run unit tests (default, fast, mocked):**
 ```bash
-uv run pytest tests/ -m unit -v
+uv run pytest
+# or explicitly:
+uv run pytest tests/unit/
 ```
 
 **Run integration tests (requires debootstrap, binutils, fakeroot):**
@@ -221,25 +223,34 @@ uv run pytest tests/ -m unit -v
 sudo apt-get install debootstrap binutils fakeroot
 
 # Run integration tests
-uv run pytest tests/ -m integration -v
+uv run pytest tests/integration/
 ```
 
 **Run all tests:**
 ```bash
-uv run pytest tests/ -v
+uv run pytest tests/
 ```
 
 **Run tests with coverage:**
 ```bash
-uv run pytest tests/ --cov=. --cov-report=term-missing
+uv run pytest --cov=. --cov-report=term-missing
 ```
 
 ### Test Structure
 
-- `tests/test_unit.py` - Unit tests with mocked dependencies (fast)
-- `tests/test_cli.py` - CLI argument parsing tests
-- `tests/test_integration.py` - Integration tests with real system calls (slow)
-- `tests/conftest.py` - Shared fixtures and test configuration
+```
+tests/
+├── unit/                   - Unit tests (default, fast, mocked)
+│   ├── test_unit.py        - Core function unit tests
+│   ├── test_unit_extended.py - Extended unit tests
+│   └── test_cli.py         - CLI argument parsing tests
+├── integration/            - Integration tests (real system calls)
+│   └── test_integration.py - Integration tests with debootstrap
+├── manual/                 - Manual tests (not automated)
+│   └── README.md           - Manual testing guide
+├── conftest.py             - Shared fixtures
+└── fixtures/               - Test data files
+```
 
 ### Continuous Integration
 

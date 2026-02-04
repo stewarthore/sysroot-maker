@@ -17,13 +17,14 @@ test = [
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers --cov=. --cov-report=term-missing"
-testpaths = ["tests"]
+testpaths = ["tests/unit"]
 pythonpath = ["."]
 markers = [
     "unit: Unit tests with mocked dependencies (fast)",
     "integration: Integration tests with real system calls (slow)",
     "slow: Slow-running tests",
     "requires_debootstrap: Tests requiring debootstrap installed",
+    "manual: Manual tests that require user interaction",
 ]
 
 [tool.coverage.run]

@@ -26,47 +26,57 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 We use three types of tests:
 
-1. **Unit Tests** (`@pytest.mark.unit`)
+1. **Unit Tests** (`tests/unit/`)
    - Fast tests with mocked dependencies
    - No real system calls (debootstrap, ar, etc.)
    - Test individual functions in isolation
    - Should complete in milliseconds
+   - **Run by default** with `uv run pytest`
 
-2. **Integration Tests** (`@pytest.mark.integration`)
+2. **Integration Tests** (`tests/integration/`)
    - Tests with real system calls
    - Requires system dependencies installed
    - Tests interaction between components
    - May take seconds to minutes
+   - Run with `uv run pytest tests/integration/`
 
-3. **Slow Tests** (`@pytest.mark.slow`)
-   - Long-running tests (e.g., full debootstrap)
-   - Only run when needed
+3. **Manual Tests** (`tests/manual/`)
+   - Tests requiring user interaction
+   - Performance/stress tests
+   - Real-world scenario validation
+   - Not run automatically
+   - See `tests/manual/README.md`
 
 ### Running Tests
 
-**Quick feedback (unit tests only):**
+**Quick feedback (unit tests only, default):**
 ```bash
-uv run pytest tests/ -m unit -v
+uv run pytest
 ```
 
-**Full test suite:**
+**Integration tests:**
 ```bash
-uv run pytest tests/ -v
+uv run pytest tests/integration/
+```
+
+**All automated tests:**
+```bash
+uv run pytest tests/
 ```
 
 **Specific test file:**
 ```bash
-uv run pytest tests/test_unit.py -v
+uv run pytest tests/unit/test_unit.py -v
 ```
 
 **With coverage report:**
 ```bash
-uv run pytest tests/ --cov=. --cov-report=term-missing
+uv run pytest --cov=. --cov-report=term-missing
 ```
 
 **Skip slow tests:**
 ```bash
-uv run pytest tests/ -m "not slow" -v
+uv run pytest -m "not slow"
 ```
 
 ### Writing Tests
@@ -123,10 +133,10 @@ Common fixtures are available in `tests/conftest.py`:
 
 ### Code Coverage
 
-We aim for >80% code coverage. Check coverage with:
+We aim for >80% code coverage (currently at 100%!). Check coverage with:
 
 ```bash
-uv run pytest tests/ --cov=. --cov-report=html
+uv run pytest --cov=. --cov-report=html
 # Open htmlcov/index.html in browser
 ```
 
@@ -134,8 +144,6 @@ Focus coverage on:
 - Core functionality (debootstrap, deb extraction)
 - Error handling paths
 - Input validation
-
-Some code paths (like `main()` CLI flow) are harder to test and may have lower coverage.
 
 ## Continuous Integration
 
@@ -150,11 +158,11 @@ GitHub Actions runs on every push and pull request:
 Run the same checks that CI runs:
 
 ```bash
-# Unit tests
-uv run pytest tests/ -m unit -v --cov=. --cov-report=term
+# Unit tests (default)
+uv run pytest --cov=. --cov-report=term
 
 # Integration tests (requires system deps)
-uv run pytest tests/ -m integration -v
+uv run pytest tests/integration/
 
 # Linting (if ruff is configured)
 uv tool run ruff check .

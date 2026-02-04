@@ -1,0 +1,15 @@
+# Test package list file
+# This file is used by the test suite
+
+# Basic utilities
+busybox-static
+klibc-utils
+
+# Initramfs tools
+initramfs-tools-core
+
+# This is a comment and should be ignored
+# Empty lines should also be ignored
+
+# System utilities
+base-files
