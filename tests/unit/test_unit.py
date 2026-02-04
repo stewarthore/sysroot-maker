@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2026 sysroot-maker contributors
 """Unit tests for sysroot_maker utility functions (mocked)."""
 
 import os

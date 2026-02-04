@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2026 sysroot-maker contributors
 """Tests for CLI argument parsing."""
 
 import argparse
