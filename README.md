@@ -259,6 +259,7 @@ GitHub Actions CI runs automatically on push/PR:
 - Integration tests (with system dependencies)
 - Linting and format checking
 
+
 ## License
 
 GNU GPL v3
