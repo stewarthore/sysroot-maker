@@ -46,14 +46,14 @@ def empty_package_list(tmp_path: Path) -> Path:
 @pytest.fixture
 def mock_deb_package(tmp_path: Path) -> Path:
     """Create a minimal mock .deb package for testing.
-    
+
     This creates a valid .deb structure with control and data archives.
     """
     import subprocess
-    
+
     deb_dir = tmp_path / "mock_deb"
     deb_dir.mkdir()
-    
+
     # Create control file
     control_dir = deb_dir / "control"
     control_dir.mkdir()
@@ -66,14 +66,14 @@ Maintainer: Test <test@example.com>
 Description: Test package
 """
     )
-    
+
     # Create data files
     data_dir = deb_dir / "data"
     data_dir.mkdir()
     usr_bin = data_dir / "usr" / "bin"
     usr_bin.mkdir(parents=True)
     (usr_bin / "test-binary").write_text("#!/bin/sh\necho test\n")
-    
+
     # Create control.tar.gz
     control_tar = deb_dir / "control.tar.gz"
     subprocess.run(
@@ -81,7 +81,7 @@ Description: Test package
         check=True,
         capture_output=True,
     )
-    
+
     # Create data.tar.gz
     data_tar = deb_dir / "data.tar.gz"
     subprocess.run(
@@ -89,11 +89,11 @@ Description: Test package
         check=True,
         capture_output=True,
     )
-    
+
     # Create debian-binary
     debian_binary = deb_dir / "debian-binary"
     debian_binary.write_text("2.0\n")
-    
+
     # Create .deb using ar
     deb_file = tmp_path / "test-package_1.0.0_arm64.deb"
     subprocess.run(
@@ -108,21 +108,21 @@ Description: Test package
         check=True,
         capture_output=True,
     )
-    
+
     return deb_file
 
 
 @pytest.fixture
 def mock_environment(monkeypatch):
     """Fixture to mock system environment variables and commands."""
-    
+
     def _set_commands_available(*commands):
         """Mock which commands are available."""
         available_commands = set(commands)
-        
+
         def mock_which(cmd):
             return f"/usr/bin/{cmd}" if cmd in available_commands else None
-        
+
         monkeypatch.setattr("shutil.which", mock_which)
-    
+
     return _set_commands_available

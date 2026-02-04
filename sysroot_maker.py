@@ -11,7 +11,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import urllib.request
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import List, Optional
 
@@ -21,6 +24,86 @@ INITRAMFS_PACKAGES = [
     "klibc-utils",
     "initramfs-tools-core",
 ]
+
+# Total number of stages for progress display
+TOTAL_STAGES = 6
+
+
+class ProgressIndicator:
+    """Lightweight progress indicator for terminal output.
+
+    Provides stage progress (e.g., [3/6] Running debootstrap) and an optional
+    spinner for long-running operations.
+    """
+
+    SPINNER_CHARS = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+    def __init__(self, enabled: bool = False, verbose: bool = False):
+        """Initialize progress indicator.
+
+        Args:
+            enabled: Whether progress indicators are enabled.
+            verbose: Whether verbose mode is active (disables spinner).
+        """
+        self._enabled = enabled and sys.stdout.isatty()
+        self._verbose = verbose
+        self._spinner_stop = threading.Event()
+        self._spinner_thread: Optional[threading.Thread] = None
+
+    @property
+    def enabled(self) -> bool:
+        """Return whether progress indicators are enabled."""
+        return self._enabled
+
+    def set_stage(self, stage: int, description: str) -> None:
+        """Print stage progress indicator.
+
+        Args:
+            stage: Current stage number (1-based).
+            description: Description of the current stage.
+        """
+        if self._enabled:
+            print(f"[{stage}/{TOTAL_STAGES}] {description}")
+
+    @contextmanager
+    def spinner(self, message: str):
+        """Context manager that shows a spinning indicator during execution.
+
+        The spinner is disabled in verbose mode since subprocess output would
+        conflict with the spinner display.
+
+        Args:
+            message: Message to display alongside the spinner.
+        """
+        # Don't show spinner in verbose mode or if disabled
+        if not self._enabled or self._verbose:
+            yield
+            return
+
+        self._spinner_stop.clear()
+
+        def spin():
+            idx = 0
+            while not self._spinner_stop.is_set():
+                char = self.SPINNER_CHARS[idx % len(self.SPINNER_CHARS)]
+                # Use carriage return to overwrite the line
+                sys.stdout.write(f"\r{char} {message}")
+                sys.stdout.flush()
+                idx += 1
+                time.sleep(0.1)
+
+        self._spinner_thread = threading.Thread(target=spin, daemon=True)
+        self._spinner_thread.start()
+
+        try:
+            yield
+        finally:
+            self._spinner_stop.set()
+            if self._spinner_thread:
+                self._spinner_thread.join(timeout=0.5)
+            # Clear the spinner line
+            sys.stdout.write("\r" + " " * (len(message) + 4) + "\r")
+            sys.stdout.flush()
 
 
 def get_mirror_for_arch(arch: str) -> str:
@@ -69,6 +152,7 @@ def run_debootstrap(
     packages: List[str],
     verbose: bool = False,
     use_fakeroot: bool = False,
+    progress: Optional[ProgressIndicator] = None,
 ) -> bool:
     """Run debootstrap --foreign to create the sysroot."""
     cmd = []
@@ -81,6 +165,9 @@ def run_debootstrap(
     if packages:
         cmd.append(f"--include={','.join(packages)}")
 
+    if verbose:
+        cmd.append("--verbose")
+
     cmd.extend([release, output_dir, mirror])
 
     if verbose:
@@ -89,13 +176,17 @@ def run_debootstrap(
             print("(Using fakeroot - no root privileges required)")
 
     try:
-        result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE if not verbose else None,
-            stderr=subprocess.PIPE if not verbose else None,
-            text=True,
-            check=False,
+        spinner_ctx = (
+            progress.spinner("Running debootstrap...") if progress else nullcontext()
         )
+        with spinner_ctx:
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE if not verbose else None,
+                stderr=subprocess.PIPE if not verbose else None,
+                text=True,
+                check=False,
+            )
 
         if result.returncode != 0:
             print(
@@ -329,10 +420,19 @@ Examples:
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Enable verbose output"
     )
+    parser.add_argument(
+        "--progress",
+        action="store_true",
+        help="Show progress indicators (spinner and stage progress)",
+    )
 
     args = parser.parse_args()
 
+    # Create progress indicator
+    progress = ProgressIndicator(enabled=args.progress, verbose=args.verbose)
+
     # Validate dependencies
+    progress.set_stage(1, "Validating dependencies")
     if not is_command_available("debootstrap"):
         print(
             "Error: debootstrap is not installed. Please install it first:",
@@ -347,6 +447,7 @@ Examples:
         sys.exit(1)
 
     # Determine if we should use fakeroot
+    progress.set_stage(2, "Checking privileges")
     use_fakeroot = False
     running_as_root = is_root()
 
@@ -361,13 +462,16 @@ Examples:
                 file=sys.stderr,
             )
             print("This will likely fail. Options:", file=sys.stderr)
-            print("  1. Run with sudo: sudo python3 sysroot_maker.py ...", file=sys.stderr)
+            print(
+                "  1. Run with sudo: sudo python3 sysroot_maker.py ...", file=sys.stderr
+            )
             print(
                 "  2. Install fakeroot: sudo apt-get install fakeroot", file=sys.stderr
             )
             print("", file=sys.stderr)
 
     # Determine mirror
+    progress.set_stage(3, "Setting up environment")
     mirror = args.mirror or get_mirror_for_arch(args.arch)
 
     # Handle output directory
@@ -391,6 +495,7 @@ Examples:
         print("Warning: Less than 2GB of disk space available", file=sys.stderr)
 
     # Build package list
+    progress.set_stage(4, "Assembling package list")
     packages = []
     if args.packages:
         packages.extend(args.packages)
@@ -411,7 +516,7 @@ Examples:
             print(f"Additional packages: {', '.join(packages)}")
 
     # Run debootstrap
-    print("Running debootstrap (this may take several minutes)...")
+    progress.set_stage(5, "Running debootstrap")
     if not run_debootstrap(
         output_dir,
         args.arch,
@@ -420,12 +525,14 @@ Examples:
         packages,
         args.verbose,
         use_fakeroot,
+        progress,
     ):
         sys.exit(1)
 
     print(f"✓ Debootstrap completed successfully")
 
     # Handle kernel packages
+    progress.set_stage(6, "Processing kernel packages")
     kernel_debs_to_extract = []
 
     if args.kernel_debs:
